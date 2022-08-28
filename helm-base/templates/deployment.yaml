@@ -1,0 +1,91 @@
+{{- $appname := include "ecco-app.name" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appname }}
+  labels:
+    app: {{ .Values.appname }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appname }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appname }}
+    spec:
+      terminationGracePeriodSeconds: 5
+      serviceAccountName: default
+      restartPolicy: Always
+{{- if or (.Values.enablePodSecurity) (eq (.Values.enablePodSecurity | toString) "<nil>") }}
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+{{- end }}
+      containers:
+        - name: {{ .Values.appname }}
+          image: {{ .Values.image.name }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.containerPort }}
+              protocol: TCP
+{{- if or (.Values.enablePodSecurity) (eq (.Values.enablePodSecurity | toString) "<nil>") }}
+          securityContext:
+            privileged: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+{{- end }}
+          {{- with .Values.probes }}
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+            {{- range .Values.envs }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+            {{- $root := . }}
+            {{- range .Values.secrets }}
+            {{- $secretName := .secretName -}}
+            {{- range $key, $value := .keys }}
+            - name: {{ $value }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            {{- with .Values.extraVolumeMounts }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+          resources:
+          {{- with .Values.resources }}
+{{ toYaml . | indent 12 }}
+          {{- end }}
+      volumes:
+        {{- with .Values.extraVolumes }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
