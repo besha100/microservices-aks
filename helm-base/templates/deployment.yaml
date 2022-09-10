@@ -1,10 +1,8 @@
-{{- $appname := include "ecco-app.name" . -}}
+{{- if .Values.deployment -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.appname }}
-  labels:
-    app: {{ .Values.appname }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -14,74 +12,67 @@ spec:
     metadata:
       labels:
         app: {{ .Values.appname }}
+      {{- with .Values.annotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
     spec:
-      terminationGracePeriodSeconds: 5
       serviceAccountName: default
-      restartPolicy: Always
+      terminationGracePeriodSeconds: 5
 {{- if or (.Values.enablePodSecurity) (eq (.Values.enablePodSecurity | toString) "<nil>") }}
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
         fsGroup: 1000
+        runAsGroup: 1000
         runAsNonRoot: true
+        runAsUser: 1000
 {{- end }}
+      {{- with .Values.initContainers }}
+      initContainers: 
+{{ toYaml . | indent 6 }}
+      {{- end }}
       containers:
-        - name: {{ .Values.appname }}
-          image: {{ .Values.image.name }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.image.containerPort }}
-              protocol: TCP
+        - name: {{ .Values.containername }}
 {{- if or (.Values.enablePodSecurity) (eq (.Values.enablePodSecurity | toString) "<nil>") }}
           securityContext:
-            privileged: false
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - all
+            privileged: false
+            readOnlyRootFilesystem: true
 {{- end }}
-          {{- with .Values.probes }}
-{{ toYaml . | indent 12 }}
-          {{- end }}
+          image: {{ .Values.image.name }}
+          ports:
+            - containerPort: {{ .Values.image.containerPort }}
+          {{- with .Values.env }}
           env:
-            {{- range .Values.envs }}
-{{ toYaml . | indent 12 }}
-            {{- end }}
-            {{- $root := . }}
-            {{- range .Values.secrets }}
-            {{- $secretName := .secretName -}}
-            {{- range $key, $value := .keys }}
-            - name: {{ $value }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secretName }}
-                  key: {{ $key }}
-            {{- end }}
-            {{- end }}
-          volumeMounts:
-            {{- with .Values.extraVolumeMounts }}
-{{ toYaml . | indent 12 }}
-            {{- end }}
-          resources:
-          {{- with .Values.resources }}
 {{ toYaml . | indent 12 }}
           {{- end }}
+          {{- with .Values.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          {{- with .Values.probes }}
+          probes:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts:
+{{ toYaml . | indent 10 }}
+          {{- end }}
+      {{- with .Values.extraVolumes }}
       volumes:
-        {{- with .Values.extraVolumes }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-    {{- with .Values.imagePullSecrets }}
+{{ toYaml . | indent 6 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.nodeSelector }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
-    {{- end }}
-    {{- with .Values.affinity }}
+      {{- end }}
+      {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -89,3 +80,4 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+{{- end }}
