@@ -41,7 +41,7 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.image.containerPort }}
       protocol: TCP
-      name: http
+      name: {{ .Values.service.portname }}
   selector:
     app: {{ .Values.appname }}
 {{- end }}

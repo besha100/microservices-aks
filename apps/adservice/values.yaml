@@ -15,9 +15,9 @@
 appname: adservice
 replicaCount: 1
 enablePodSecurity: true
+containername: server
 image:
   name: adservice
-  pullPolicy: always
   containerPort: 9555
 env:
   - name: PORT
@@ -29,12 +29,12 @@ env:
   # - name: JAEGER_SERVICE_ADDR
   #   value: "jaeger-collector:14268"
 resources:
-  requests:
-    cpu: 200m
-    memory: 180Mi
   limits:
     cpu: 300m
     memory: 300Mi
+  requests:
+    cpu: 200m
+    memory: 180Mi
 probes:
   readinessProbe:
     initialDelaySeconds: 20
@@ -49,3 +49,4 @@ probes:
 service:
   type: ClusterIP
   port: 9555
+  portname: http
