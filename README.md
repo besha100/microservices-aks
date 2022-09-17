@@ -1,7 +1,7 @@
 <p align="center">
 <img src="src/frontend/static/icons/Hipster_HeroLogoCyan.svg" width="300"/>
 </p>
-Demo: Deploy application micorservices on Kubernetes in Azure AKS with Istio
+Demo: Build, deploy and run a microservices-based online boutique application using Pulumi, Helm, and Istio.
 
 
 # The Application:
