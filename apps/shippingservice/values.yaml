@@ -50,3 +50,7 @@ service:
   type: ClusterIP
   port: 50051
   portname: grpc
+
+internalHost: shippingservice.boutique-apps.svc.cluster.local
+istiogateway:
+  enabled: false

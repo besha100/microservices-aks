@@ -1,0 +1,6 @@
+name: namespaces
+description: Namespaces in kubernetes cluster
+runtime:
+    name: python
+    options:
+        virtualenv: venv

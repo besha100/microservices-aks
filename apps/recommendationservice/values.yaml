@@ -51,3 +51,7 @@ service:
   type: ClusterIP
   port: 8080
   portname: grpc
+
+internalHost: recommendationservice.boutique-apps.svc.cluster.local
+istiogateway:
+  enabled: false
