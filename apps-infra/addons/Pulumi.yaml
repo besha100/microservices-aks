@@ -1,0 +1,6 @@
+name: addons
+description: Helm Chart for addons tools like ArgoCD, Promethus, Grafana, ets
+runtime:
+    name: python
+    options:
+        virtualenv: venv
