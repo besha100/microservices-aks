@@ -50,3 +50,7 @@ resources:
   requests:
     cpu: 300m
     memory: 256Mi
+
+internalHost: loadgenerator.boutique-apps.svc.cluster.local
+istiogateway:
+  enabled: false

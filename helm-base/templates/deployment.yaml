@@ -1,6 +1,6 @@
 {{- if .Values.deployment -}}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ .Values.appname }}
   labels:
@@ -10,6 +10,24 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.appname }}
+  strategy:
+    canary:
+      canaryService: {{ .Values.appname }}-canary
+      stableService: {{ .Values.appname }}
+      steps:
+      - setWeight: 10
+      - pause:
+          duration: 60s
+      - setWeight: 30
+      - pause:
+          duration: 2m
+      - setWeight: 50
+      - pause:
+          duration: 60s
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.appname }}
   template:
     metadata:
       labels:

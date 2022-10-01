@@ -47,3 +47,7 @@ service:
   type: ClusterIP
   port: 7000
   portname: grpc
+
+internalHost: currencyservice.boutique-apps.svc.cluster.local
+istiogateway:
+  enabled: false

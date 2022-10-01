@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.appname }}
+  labels:
+{{ include "common.labels" . | indent 4 }}
+spec:
+  {{- if .Values.istiogateway.enabled -}}
+  gateways:
+  - {{ .Values.istiogateway.gatewayName }}
+  {{- end }}
+  hosts:
+  - {{ .Values.internalHost }}
+  {{- if .Values.istiogateway.enabled -}}
+  - {{ .Values.istiogateway.publicHost }}
+  {{- end }}
+  http:
+  - route:
+    - destination:
+        host: {{ .Values.internalHost }}
